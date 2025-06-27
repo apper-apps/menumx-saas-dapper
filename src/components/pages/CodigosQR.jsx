@@ -78,8 +78,39 @@ const CodigosQR = () => {
         toast.error('Error al eliminar el código QR')
       }
     }
-  }
+}
 
+  const handleCopyUrl = async (url) => {
+    try {
+      // Check if navigator.clipboard is available (modern browsers)
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url)
+        toast.success('URL copiada al portapapeles')
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement('textarea')
+        textArea.value = url
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-999999px'
+        textArea.style.top = '-999999px'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        
+        const successful = document.execCommand('copy')
+        document.body.removeChild(textArea)
+        
+        if (successful) {
+          toast.success('URL copiada al portapapeles')
+        } else {
+          throw new Error('Comando de copia no soportado')
+        }
+      }
+    } catch (err) {
+      console.error('Error al copiar URL:', err)
+      toast.error('No se pudo copiar la URL. Intenta seleccionar y copiar manualmente.')
+    }
+  }
   if (loading) {
     return <Loading type="grid" />
   }
@@ -202,15 +233,12 @@ const CodigosQR = () => {
                       </Button>
                     </div>
                     
-                    <div className="flex space-x-2">
+<div className="flex space-x-2">
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="outline"  
                         icon="Copy"
-                        onClick={() => {
-                          navigator.clipboard.writeText(codigo.url)
-                          toast.success('URL copiada al portapapeles')
-                        }}
+                        onClick={() => handleCopyUrl(codigo.url)}
                         className="flex-1"
                       >
                         Copiar URL
